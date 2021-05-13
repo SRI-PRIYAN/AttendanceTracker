@@ -13,11 +13,11 @@ const db = knex({
     }
 })
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     let success = true;
     let teacherTable;
 
-    db.select('*').from('teacher')
+    await db.select('*').from('teacher')
         .then(data => {
             console.table(data);
             teacherTable = JSON.stringify(data);
@@ -27,10 +27,12 @@ app.get('/', (req, res) => {
             console.log(err);
         });
 
-    if (success)
+    if (success) {
         res.json(teacherTable);
-    else
+    }
+    else {
         res.status(400).send('Error While Retrieving Data');
+    }
 })
 
 app.listen(PORT, () => {
