@@ -15,12 +15,12 @@ const db = knex({
 
 app.get('/', (req, res) => {
     let success = true;
-    let teacherTable = [];
+    let teacherTable;
 
     db.select('*').from('teacher')
         .then(data => {
             console.table(data);
-            teacherTable = data;
+            teacherTable = JSON.stringify(data);
         })
         .catch(err => {
             success = false;
