@@ -14,11 +14,23 @@ const db = knex({
 })
 
 app.get('/', (req, res) => {
-    db.select('*').from('teacher')
-    .then(console.table)
-    .catch(console.log);
+    let success = true;
+    let teacherTable = [];
 
-    res.send('Successfully selected from teacher table');
+    db.select('*').from('teacher')
+        .then(data => {
+            console.table(data);
+            teacherTable = data;
+        })
+        .catch(err => {
+            success = false;
+            console.log(err);
+        });
+
+    if (success)
+        res.json(teacherTable);
+    else
+        res.status(400).send('Error While Retrieving Data');
 })
 
 app.listen(PORT, () => {
