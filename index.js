@@ -1,40 +1,74 @@
-const express = require('express');
-const knex = require('knex');
+const express = require("express");
+const { Readable } = require("stream");
+const knex = require("knex");
+const cors = require("cors");
+const bcrypt = require("bcrypt");
+const expressFileUpload = require("express-fileupload");
+const csv = require("csv-parser");
+const validator = require("email-validator");
+const register = require("./controllers/register");
+const login = require("./controllers/login");
+const newClass = require("./controllers/newClass");
+const { handleStudentFileUpload } = require("./controllers/studentFileUpload");
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
+const SALT_ROUNDS = 10;
 const app = express();
+
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(expressFileUpload());
+app.use(cors());
+
+// Heroku connection
+// const db = knex({
+//   client: "pg",
+//   connection: {
+//     connectionString: process.env.DATABASE_URL,
+//     ssl: {
+//       rejectUnauthorized: false,
+//     },
+//   },
+// });
+
+// Localhost connection
 const db = knex({
-    client: 'pg',
-    connection: {
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false
-        }
-    }
-})
+  client: "pg",
+  connection: {
+    host: "127.0.0.1",
+    user: "postgres",
+    password: "admin",
+    database: "postgres",
+  },
+});
 
-app.get('/', async (req, res) => {
-    let success = true;
-    let teacherTable;
+app.post(
+  "/register",
+  register.handleRegister(db, bcrypt, SALT_ROUNDS, validator)
+);
 
-    await db.select('*').from('teacher')
-        .then(data => {
-            console.table(data);
-            teacherTable = JSON.stringify(data);
-        })
-        .catch(err => {
-            success = false;
-            console.log(err);
-        });
+app.post("/login", login.handleLogin(db, bcrypt));
 
-    if (success) {
-        res.json(teacherTable);
-    }
-    else {
-        res.status(400).send('Error While Retrieving Data');
-    }
-})
+app.post("/createNewClass", newClass.create(db));
+
+app.post("/upload/studentFile", handleStudentFileUpload(db, Readable, csv));
+
+app.post("/upload/attendanceFile", (req, res) => {
+  console.log(req.files.attendanceFile.data.toString());
+  console.log(req.body);
+  console.log(JSON.parse(req.body.user));
+  return res.json({ message: "work in progress" });
+});
+
+// If users request route that doesn't exist
+app.use((req, res, next) => {
+  const error = {
+    message: "Not Found",
+  };
+
+  return res.status(404).json(error);
+});
 
 app.listen(PORT, () => {
-    console.log(`Listening to port ${PORT}`);
-})
+  console.log(`Listening to port ${PORT}`);
+});
