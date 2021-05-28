@@ -54,10 +54,10 @@ app.post("/createNewClass", newClass.create(db));
 app.post("/upload/studentFile", handleStudentFileUpload(db, Readable, csv));
 
 app.post("/upload/attendanceFile", (req, res) => {
-  console.log(req.files.attendanceFile.data.toString());
+  console.log(req.files);
   console.log(req.body);
   console.log(JSON.parse(req.body.user));
-  return res.json({ message: "work in progress" });
+  return res.status(400).json({ message: "work in progress" });
 });
 
 // If users request route that doesn't exist

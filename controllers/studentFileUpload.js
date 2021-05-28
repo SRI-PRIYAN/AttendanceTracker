@@ -2,7 +2,7 @@ const { getClassId } = require("../helpers/getClassId");
 const { getObjectsFromCSV } = require("../helpers/getObjectsFromCSV");
 
 const handleStudentFileUpload = (db, Readable, csv) => async (req, res) => {
-  if (req.files.studentFile.mimetype !== "application/octet-stream") {
+  if (!req.files.studentFile.name.endsWith(".csv")) {
     return res.status(400).json({ message: "Only CSV files are accepted!" });
   }
 
@@ -37,14 +37,17 @@ const handleStudentFileUpload = (db, Readable, csv) => async (req, res) => {
     });
 
     const insertedStudents = await db
-      .select("rollno", "name", "subject")
+      .select("student.rollno", "student.name", "email", "year")
       .from("class_students")
       .innerJoin("class", { "class_students.class_id": "class.class_id" })
+      .innerJoin("student", {
+        "class_students.student_id": "student.student_id",
+      })
       .where({ "class.class_id": class_id });
 
     return res
       .status(201)
-      .json({ title: "Added/Updated Students", table: insertedStudents });
+      .json({ title: `Students of ${className}`, table: insertedStudents });
   } catch (err) {
     console.log(err);
     return res
