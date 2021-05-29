@@ -26,6 +26,7 @@
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",
+    "iconv-lite": "^0.4.24",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.5",
     "pg": "^8.6.0"

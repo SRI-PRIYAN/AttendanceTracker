@@ -1,15 +1,16 @@
 const express = require("express");
-const { Readable } = require("stream");
 const knex = require("knex");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const expressFileUpload = require("express-fileupload");
-const csv = require("csv-parser");
 const validator = require("email-validator");
 const register = require("./controllers/register");
 const login = require("./controllers/login");
 const newClass = require("./controllers/newClass");
 const { handleStudentFileUpload } = require("./controllers/studentFileUpload");
+const {
+  handleAttendanceFileUpload,
+} = require("./controllers/attendanceFileUpload");
 
 const PORT = process.env.PORT || 4000;
 const SALT_ROUNDS = 10;
@@ -51,14 +52,9 @@ app.post("/login", login.handleLogin(db, bcrypt));
 
 app.post("/createNewClass", newClass.create(db));
 
-app.post("/upload/studentFile", handleStudentFileUpload(db, Readable, csv));
+app.post("/upload/studentFile", handleStudentFileUpload(db));
 
-app.post("/upload/attendanceFile", (req, res) => {
-  console.log(req.files);
-  console.log(req.body);
-  console.log(JSON.parse(req.body.user));
-  return res.status(400).json({ message: "work in progress" });
-});
+app.post("/upload/attendanceFile", handleAttendanceFileUpload(db));
 
 // If users request route that doesn't exist
 app.use((req, res, next) => {

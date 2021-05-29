@@ -1,7 +1,8 @@
 const { getClassId } = require("../helpers/getClassId");
 const { getObjectsFromCSV } = require("../helpers/getObjectsFromCSV");
 
-const handleStudentFileUpload = (db, Readable, csv) => async (req, res) => {
+const handleStudentFileUpload = (db) => async (req, res) => {
+  if (!req.files) return res.status(404).json({ message: "File Not Found!" });
   if (!req.files.studentFile.name.endsWith(".csv")) {
     return res.status(400).json({ message: "Only CSV files are accepted!" });
   }
@@ -13,11 +14,7 @@ const handleStudentFileUpload = (db, Readable, csv) => async (req, res) => {
     const class_id = await getClassId(db, className, user.faculty_id);
     console.log(`class_id: ${class_id}`);
 
-    const students = await getObjectsFromCSV(
-      Readable,
-      csv,
-      req.files.studentFile.data
-    );
+    const students = await getObjectsFromCSV(req.files.studentFile.data);
 
     await db.transaction(async (trx) => {
       for (const student of students) {
@@ -37,13 +34,10 @@ const handleStudentFileUpload = (db, Readable, csv) => async (req, res) => {
     });
 
     const insertedStudents = await db
-      .select("student.rollno", "student.name", "email", "year")
+      .select("rollno", "name", "email", "year")
       .from("class_students")
-      .innerJoin("class", { "class_students.class_id": "class.class_id" })
-      .innerJoin("student", {
-        "class_students.student_id": "student.student_id",
-      })
-      .where({ "class.class_id": class_id });
+      .where({ class_id })
+      .orderBy("rollno");
 
     return res
       .status(201)
