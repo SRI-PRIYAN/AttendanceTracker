@@ -11,6 +11,10 @@ const { handleStudentFileUpload } = require("./controllers/studentFileUpload");
 const {
   handleAttendanceFileUpload,
 } = require("./controllers/attendanceFileUpload");
+const { getLectureList } = require("./controllers/getLectureList");
+const { getSummary } = require("./controllers/getSummary");
+const { updateThreshold } = require("./controllers/updateThreshold");
+const { lectureAttendance } = require("./controllers/lectureAttendance");
 
 const PORT = process.env.PORT || 4000;
 const SALT_ROUNDS = 10;
@@ -55,6 +59,14 @@ app.post("/createNewClass", newClass.create(db));
 app.post("/upload/studentFile", handleStudentFileUpload(db));
 
 app.post("/upload/attendanceFile", handleAttendanceFileUpload(db));
+
+app.post("/getLectureList", getLectureList(db));
+
+app.post("/getSummary", getSummary(db));
+
+app.post("/updateThreshold", updateThreshold(db));
+
+app.post("/lectureAttendance", lectureAttendance(db));
 
 // If users request route that doesn't exist
 app.use((req, res, next) => {

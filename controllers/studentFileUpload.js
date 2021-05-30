@@ -1,5 +1,6 @@
 const { getClassId } = require("../helpers/getClassId");
 const { getObjectsFromCSV } = require("../helpers/getObjectsFromCSV");
+const { numberOfStudents } = require("../helpers/numberOfStudents");
 
 const handleStudentFileUpload = (db) => async (req, res) => {
   if (!req.files) return res.status(404).json({ message: "File Not Found!" });
@@ -39,9 +40,13 @@ const handleStudentFileUpload = (db) => async (req, res) => {
       .where({ class_id })
       .orderBy("rollno");
 
-    return res
-      .status(201)
-      .json({ title: `Students of ${className}`, table: insertedStudents });
+    const totalStudents = await numberOfStudents(db, class_id);
+
+    return res.status(201).json({
+      title: `Students of ${className}`,
+      subTitle: `Total Students: ${totalStudents}`,
+      table: insertedStudents,
+    });
   } catch (err) {
     console.log(err);
     return res
