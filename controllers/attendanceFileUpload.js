@@ -3,16 +3,21 @@ const { getObjectsFromCSV } = require("../helpers/getObjectsFromCSV");
 
 const GRACE_TIME = 5; // minutes
 
-const getDuration = (str) => {
-  if (str.includes("m")) return Number(str.split("m")[0]);
+const getDurationInMinutes = (str) => {
+  let duration = 0;
+  if (str.includes("h")) {
+    duration += Number(str.split("h")[0]) * 60;
+    str = str.split("h")[1].trim();
+  }
+  if (str.includes("m")) duration += Number(str.split("m")[0]);
 
-  return 0;
+  return duration;
 };
 
-const getTotalDuration = (participant) => {
+const getTotalDurationInMinutes = (participant) => {
   let duration = 0;
   participant.forEach((entry) => {
-    duration += getDuration(entry["Duration"]);
+    duration += getDurationInMinutes(entry["Duration"]);
   });
 
   return duration;
@@ -44,7 +49,7 @@ const handleAttendanceFileUpload = (db) => async (req, res) => {
     console.log(organizer);
 
     const start_time = organizer[0]["Join Time"];
-    const lecture_duration = getTotalDuration(organizer);
+    const lecture_duration = getTotalDurationInMinutes(organizer);
 
     const threshold_duration =
       (lecture_duration * threshold_percent) / 100 - GRACE_TIME;
@@ -75,7 +80,7 @@ const handleAttendanceFileUpload = (db) => async (req, res) => {
           (p) => p["Email"] === student.email
         );
 
-        const student_duration = getTotalDuration(entries);
+        const student_duration = getTotalDurationInMinutes(entries);
         const ispresent = student_duration >= threshold_duration;
 
         await trx("attends").insert({
