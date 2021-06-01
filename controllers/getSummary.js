@@ -12,6 +12,7 @@ const getSummary = (db) => async (req, res) => {
 
     console.log(`Number of Students: ${totalStudents}`);
     console.log(`Number of Lectures: ${totalLectures}`);
+    console.log(typeof totalLectures);
 
     if (totalLectures === 0) {
       return res.status(404).json({ message: "No lectures for this class!" });

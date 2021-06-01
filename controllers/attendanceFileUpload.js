@@ -1,5 +1,6 @@
 const { getClassId } = require("../helpers/getClassId");
 const { getObjectsFromCSV } = require("../helpers/getObjectsFromCSV");
+const { numberOfStudents } = require("../helpers/numberOfStudents");
 
 const GRACE_TIME = 5; // minutes
 
@@ -35,6 +36,13 @@ const handleAttendanceFileUpload = (db) => async (req, res) => {
 
   try {
     const class_id = await getClassId(db, className, user.faculty_id);
+    const totalStudents = await numberOfStudents(db, class_id);
+
+    if (totalStudents === 0) {
+      return res
+        .status(400)
+        .json({ message: "Add students before uploading lecture attendance!" });
+    }
 
     const participants = await getObjectsFromCSV(
       req.files.attendanceFile.data,
@@ -52,7 +60,7 @@ const handleAttendanceFileUpload = (db) => async (req, res) => {
     const lecture_duration = getTotalDurationInMinutes(organizer);
 
     const threshold_duration =
-      (lecture_duration * threshold_percent) / 100 - GRACE_TIME;
+      Math.floor((lecture_duration * threshold_percent) / 100) - GRACE_TIME;
 
     const { lecture_id } = (
       await db("lecture")
@@ -64,6 +72,8 @@ const handleAttendanceFileUpload = (db) => async (req, res) => {
           ),
           threshold_percent,
         })
+        .onConflict(["class_id", "start_time"])
+        .merge()
         .returning(["lecture_id"])
     )[0];
 
@@ -100,7 +110,7 @@ const handleAttendanceFileUpload = (db) => async (req, res) => {
 
     return res.status(201).json({
       title: `Lecture Attendance for ${className}`,
-      subTitle: `Start Time: ${start_time}`,
+      subTitle: `Start Time: ${start_time}, Total Students: ${totalStudents}`,
       table,
     });
   } catch (err) {
