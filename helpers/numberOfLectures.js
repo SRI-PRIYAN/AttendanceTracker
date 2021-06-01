@@ -3,7 +3,7 @@ const numberOfLectures = (db, class_id) => {
     db("lecture")
       .count("lecture_id as totalLectures")
       .where({ class_id })
-      .then((table) => resolve(table[0].totalLectures))
+      .then((table) => resolve(Number(table[0].totalLectures)))
       .catch(reject);
   });
 };

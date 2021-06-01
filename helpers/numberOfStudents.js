@@ -3,7 +3,7 @@ const numberOfStudents = (db, class_id) => {
     db("belongsto")
       .count("student_id AS totalStudents")
       .where({ class_id })
-      .then((table) => resolve(table[0].totalStudents))
+      .then((table) => resolve(Number(table[0].totalStudents)))
       .catch(reject);
   });
 };
