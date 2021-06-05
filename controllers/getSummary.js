@@ -25,6 +25,9 @@ const getSummary = (db) => async (req, res) => {
         "email",
         db.raw(
           `format('%s/${totalLectures}', COUNT(CASE WHEN ispresent=true THEN 1 END)) AS attendance`
+        ),
+        db.raw(
+          `ROUND((COUNT(CASE WHEN ispresent=true THEN 1 END)::decimal / ${totalLectures}) * 100, 2) AS "attendance percentage"`
         )
       )
       .from("student_attendance")
