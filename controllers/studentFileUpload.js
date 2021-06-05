@@ -3,7 +3,8 @@ const { getObjectsFromCSV } = require("../helpers/getObjectsFromCSV");
 const { numberOfStudents } = require("../helpers/numberOfStudents");
 
 const handleStudentFileUpload = (db) => async (req, res) => {
-  if (!req.files) return res.status(404).json({ message: "File Not Found!" });
+  if (!req.files || !req.files.studentFile)
+    return res.status(404).json({ message: "File Not Found!" });
   if (!req.files.studentFile.name.endsWith(".csv")) {
     return res.status(400).json({ message: "Only CSV files are accepted!" });
   }

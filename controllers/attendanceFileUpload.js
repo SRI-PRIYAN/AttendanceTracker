@@ -25,7 +25,8 @@ const getTotalDurationInMinutes = (participant) => {
 };
 
 const handleAttendanceFileUpload = (db) => async (req, res) => {
-  if (!req.files) return res.status(404).json({ message: "File Not Found!" });
+  if (!req.files || !req.files.attendanceFile)
+    return res.status(404).json({ message: "File Not Found!" });
   if (!req.files.attendanceFile.name.endsWith(".csv")) {
     return res.status(400).json({ message: "Only CSV files are accepted!" });
   }
@@ -93,12 +94,15 @@ const handleAttendanceFileUpload = (db) => async (req, res) => {
         const student_duration = getTotalDurationInMinutes(entries);
         const ispresent = student_duration >= threshold_duration;
 
-        await trx("attends").insert({
-          student_id: student.student_id,
-          lecture_id,
-          ispresent,
-          duration: student_duration,
-        });
+        await trx("attends")
+          .insert({
+            student_id: student.student_id,
+            lecture_id,
+            ispresent,
+            duration: student_duration,
+          })
+          .onConflict(["student_id", "lecture_id"])
+          .merge();
       }
     });
 

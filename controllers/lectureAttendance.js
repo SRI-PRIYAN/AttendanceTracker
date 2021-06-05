@@ -17,7 +17,7 @@ const lectureAttendance = (db) => async (req, res) => {
       .where({ lecture_id })
       .orderBy("rollno");
 
-    return res.status(201).json({
+    return res.status(200).json({
       title: `Lecture Attendance for ${className}`,
       subTitle: `Lecture ID: ${lecture_id}`,
       table,

@@ -1,3 +1,5 @@
+const { classExists } = require("../helpers/classExists");
+
 const create = (db) => async (req, res) => {
   const { user, className } = req.body;
 
@@ -6,6 +8,18 @@ const create = (db) => async (req, res) => {
   }
 
   try {
+    const classAlreadyExists = await classExists(
+      db,
+      className,
+      user.faculty_id
+    );
+
+    if (classAlreadyExists) {
+      return res
+        .status(400)
+        .json({ message: `Class ${className} Already Exists!` });
+    }
+
     await db("class").insert({
       faculty_id: user.faculty_id,
       subject: className,

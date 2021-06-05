@@ -4,12 +4,13 @@ const { numberOfStudents } = require("../helpers/numberOfStudents");
 
 const getLectureList = (db) => async (req, res) => {
   const { className, user } = req.body;
-  const class_id = await getClassId(db, className, user.faculty_id);
-
-  const totalStudents = await numberOfStudents(db, class_id);
-  console.log(totalStudents);
 
   try {
+    const class_id = await getClassId(db, className, user.faculty_id);
+
+    const totalStudents = await numberOfStudents(db, class_id);
+    console.log(totalStudents);
+
     const lectureList = await lectureHistory(db, class_id, totalStudents);
 
     if (lectureList.length == 0) {
